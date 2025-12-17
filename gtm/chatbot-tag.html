@@ -1,5 +1,5 @@
 <!--
-  Avisia Chatbot - GTM Custom HTML Tag
+  Avisia Chatbot - GTM Custom HTML Tag (ES5 Compatible)
 
   SETUP INSTRUCTIONS:
   1. Copy this entire code
@@ -14,626 +14,584 @@
   'use strict';
 
   // Prevent multiple instances
-  if (window.avisiaCohatbotLoaded) return;
+  if (window.avisiaChatbotLoaded) return;
   window.avisiaChatbotLoaded = true;
 
   // Configuration - UPDATE THIS URL
-  const CLOUD_RUN_URL = 'YOUR_CLOUD_RUN_URL'; // e.g., https://avisia-chatbot-xxx-uc.a.run.app
+  var CLOUD_RUN_URL = 'YOUR_CLOUD_RUN_URL'; // e.g., https://avisia-chatbot-xxx-uc.a.run.app
 
   // Inject CSS
-  const style = document.createElement('style');
-  style.textContent = `
-    /* Paste contents of chatbot.css here, or load externally */
-    /* For production, host CSS on CDN and load via link tag */
-
-    /* Container and positioning */
-    .avisia-chatbot-container {
-        position: fixed;
-        z-index: 999999;
-        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-    }
-
-    .avisia-chatbot-container.bottom-right {
-        bottom: 20px;
-        right: 20px;
-    }
-
-    .avisia-chatbot-container.bottom-left {
-        bottom: 20px;
-        left: 20px;
-    }
-
-    .avisia-chatbot-container.top-right {
-        top: 20px;
-        right: 20px;
-    }
-
-    .avisia-chatbot-container.top-left {
-        top: 20px;
-        left: 20px;
-    }
-
-    /* Toggle button */
-    .avisia-chatbot-toggle {
-        width: 60px;
-        height: 60px;
-        border-radius: 30px;
-        background: linear-gradient(135deg, #4285f4 0%, #357ae8 100%);
-        border: none;
-        box-shadow: 0 4px 12px rgba(66, 133, 244, 0.4);
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        transition: all 0.3s ease;
-        position: relative;
-    }
-
-    .avisia-chatbot-toggle:hover {
-        transform: scale(1.05);
-        box-shadow: 0 6px 16px rgba(66, 133, 244, 0.5);
-    }
-
-    .avisia-chatbot-toggle:active {
-        transform: scale(0.95);
-    }
-
-    .avisia-chatbot-toggle svg {
-        color: white;
-    }
-
-    .avisia-chatbot-badge {
-        position: absolute;
-        top: -5px;
-        right: -5px;
-        background: #ea4335;
-        color: white;
-        border-radius: 10px;
-        padding: 2px 6px;
-        font-size: 11px;
-        font-weight: bold;
-        min-width: 18px;
-        text-align: center;
-    }
-
-    /* Chat widget */
-    .avisia-chatbot-widget {
-        width: 380px;
-        height: 550px;
-        background: white;
-        border-radius: 16px;
-        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
-        display: flex;
-        flex-direction: column;
-        overflow: hidden;
-        opacity: 0;
-        transform: scale(0.8) translateY(20px);
-        pointer-events: none;
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    }
-
-    .avisia-chatbot-widget.open {
-        opacity: 1;
-        transform: scale(1) translateY(0);
-        pointer-events: all;
-    }
-
-    /* Header */
-    .avisia-chatbot-header {
-        background: linear-gradient(135deg, #4285f4 0%, #357ae8 100%);
-        color: white;
-        padding: 16px 20px;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    }
-
-    .avisia-chatbot-title {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        font-weight: 600;
-        font-size: 16px;
-    }
-
-    .avisia-chatbot-close {
-        background: transparent;
-        border: none;
-        color: white;
-        cursor: pointer;
-        padding: 4px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        border-radius: 4px;
-        transition: background 0.2s ease;
-    }
-
-    .avisia-chatbot-close:hover {
-        background: rgba(255, 255, 255, 0.1);
-    }
-
-    /* Messages area */
-    .avisia-chatbot-messages {
-        flex: 1;
-        overflow-y: auto;
-        padding: 20px;
-        display: flex;
-        flex-direction: column;
-        gap: 12px;
-        background: #f8f9fa;
-    }
-
-    .avisia-chatbot-messages::-webkit-scrollbar {
-        width: 6px;
-    }
-
-    .avisia-chatbot-messages::-webkit-scrollbar-track {
-        background: transparent;
-    }
-
-    .avisia-chatbot-messages::-webkit-scrollbar-thumb {
-        background: #cbd5e0;
-        border-radius: 3px;
-    }
-
-    .avisia-chatbot-messages::-webkit-scrollbar-thumb:hover {
-        background: #a0aec0;
-    }
-
-    /* Message bubbles */
-    .avisia-message {
-        display: flex;
-        margin-bottom: 8px;
-        animation: slideIn 0.3s ease;
-    }
-
-    @keyframes slideIn {
-        from {
-            opacity: 0;
-            transform: translateY(10px);
-        }
-        to {
-            opacity: 1;
-            transform: translateY(0);
-        }
-    }
-
-    .avisia-message-content {
-        padding: 12px 16px;
-        border-radius: 12px;
-        max-width: 75%;
-        word-wrap: break-word;
-        line-height: 1.5;
-        font-size: 14px;
-    }
-
-    .avisia-message-user .avisia-message-content {
-        background: linear-gradient(135deg, #4285f4 0%, #357ae8 100%);
-        color: white;
-        margin-left: auto;
-        border-bottom-right-radius: 4px;
-    }
-
-    .avisia-message-assistant .avisia-message-content {
-        background: white;
-        color: #2d3748;
-        border: 1px solid #e2e8f0;
-        border-bottom-left-radius: 4px;
-    }
-
-    /* Loading animation */
-    .avisia-message-loading .avisia-message-content {
-        padding: 16px;
-    }
-
-    .avisia-loading-dots {
-        display: flex;
-        gap: 4px;
-        align-items: center;
-    }
-
-    .avisia-loading-dots span {
-        width: 8px;
-        height: 8px;
-        border-radius: 50%;
-        background: #cbd5e0;
-        animation: bounce 1.4s infinite ease-in-out both;
-    }
-
-    .avisia-loading-dots span:nth-child(1) {
-        animation-delay: -0.32s;
-    }
-
-    .avisia-loading-dots span:nth-child(2) {
-        animation-delay: -0.16s;
-    }
-
-    @keyframes bounce {
-        0%, 80%, 100% {
-            transform: scale(0);
-            opacity: 0.5;
-        }
-        40% {
-            transform: scale(1);
-            opacity: 1;
-        }
-    }
-
-    /* Input area */
-    .avisia-chatbot-input-area {
-        display: flex;
-        gap: 8px;
-        padding: 16px 20px;
-        background: white;
-        border-top: 1px solid #e2e8f0;
-    }
-
-    .avisia-chatbot-input {
-        flex: 1;
-        border: 1px solid #e2e8f0;
-        border-radius: 24px;
-        padding: 10px 16px;
-        font-size: 14px;
-        outline: none;
-        transition: all 0.2s ease;
-        font-family: inherit;
-    }
-
-    .avisia-chatbot-input:focus {
-        border-color: #4285f4;
-        box-shadow: 0 0 0 3px rgba(66, 133, 244, 0.1);
-    }
-
-    .avisia-chatbot-input::placeholder {
-        color: #a0aec0;
-    }
-
-    .avisia-chatbot-send {
-        width: 40px;
-        height: 40px;
-        border-radius: 20px;
-        background: linear-gradient(135deg, #4285f4 0%, #357ae8 100%);
-        border: none;
-        color: white;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        transition: all 0.2s ease;
-        flex-shrink: 0;
-    }
-
-    .avisia-chatbot-send:hover {
-        transform: scale(1.05);
-        box-shadow: 0 4px 12px rgba(66, 133, 244, 0.3);
-    }
-
-    .avisia-chatbot-send:active {
-        transform: scale(0.95);
-    }
-
-    .avisia-chatbot-send:disabled {
-        opacity: 0.5;
-        cursor: not-allowed;
-    }
-
-    /* Mobile responsiveness */
-    @media (max-width: 480px) {
-        .avisia-chatbot-widget {
-            width: calc(100vw - 40px);
-            height: calc(100vh - 40px);
-            max-height: 600px;
-        }
-
-        .avisia-chatbot-container {
-            bottom: 10px;
-            right: 10px;
-            left: 10px;
-        }
-
-        .avisia-chatbot-toggle {
-            width: 56px;
-            height: 56px;
-        }
-
-        .avisia-message-content {
-            max-width: 85%;
-            font-size: 13px;
-        }
-    }
-
-    .avisia-chatbot-toggle:focus-visible,
-    .avisia-chatbot-close:focus-visible,
-    .avisia-chatbot-send:focus-visible,
-    .avisia-chatbot-input:focus-visible {
-        outline: 2px solid #4285f4;
-        outline-offset: 2px;
-    }
-
-    * {
-        box-sizing: border-box;
-    }
-
-    .avisia-chatbot-container * {
-        margin: 0;
-        padding: 0;
-    }
-  `;
+  var style = document.createElement('style');
+  style.textContent = '\
+    /* Paste contents of chatbot.css here, or load externally */\
+    /* For production, host CSS on CDN and load via link tag */\
+\
+    /* Container and positioning */\
+    .avisia-chatbot-container {\
+        position: fixed;\
+        z-index: 999999;\
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;\
+    }\
+\
+    .avisia-chatbot-container.bottom-right {\
+        bottom: 20px;\
+        right: 20px;\
+    }\
+\
+    .avisia-chatbot-container.bottom-left {\
+        bottom: 20px;\
+        left: 20px;\
+    }\
+\
+    .avisia-chatbot-container.top-right {\
+        top: 20px;\
+        right: 20px;\
+    }\
+\
+    .avisia-chatbot-container.top-left {\
+        top: 20px;\
+        left: 20px;\
+    }\
+\
+    /* Toggle button */\
+    .avisia-chatbot-toggle {\
+        width: 60px;\
+        height: 60px;\
+        border-radius: 30px;\
+        background: linear-gradient(135deg, #4285f4 0%, #357ae8 100%);\
+        border: none;\
+        box-shadow: 0 4px 12px rgba(66, 133, 244, 0.4);\
+        cursor: pointer;\
+        display: flex;\
+        align-items: center;\
+        justify-content: center;\
+        transition: all 0.3s ease;\
+        position: relative;\
+    }\
+\
+    .avisia-chatbot-toggle:hover {\
+        transform: scale(1.05);\
+        box-shadow: 0 6px 16px rgba(66, 133, 244, 0.5);\
+    }\
+\
+    .avisia-chatbot-toggle:active {\
+        transform: scale(0.95);\
+    }\
+\
+    .avisia-chatbot-toggle svg {\
+        color: white;\
+    }\
+\
+    .avisia-chatbot-badge {\
+        position: absolute;\
+        top: -5px;\
+        right: -5px;\
+        background: #ea4335;\
+        color: white;\
+        border-radius: 10px;\
+        padding: 2px 6px;\
+        font-size: 11px;\
+        font-weight: bold;\
+        min-width: 18px;\
+        text-align: center;\
+    }\
+\
+    /* Chat widget */\
+    .avisia-chatbot-widget {\
+        width: 380px;\
+        height: 550px;\
+        background: white;\
+        border-radius: 16px;\
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);\
+        display: flex;\
+        flex-direction: column;\
+        overflow: hidden;\
+        opacity: 0;\
+        transform: scale(0.8) translateY(20px);\
+        pointer-events: none;\
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);\
+    }\
+\
+    .avisia-chatbot-widget.open {\
+        opacity: 1;\
+        transform: scale(1) translateY(0);\
+        pointer-events: all;\
+    }\
+\
+    /* Header */\
+    .avisia-chatbot-header {\
+        background: linear-gradient(135deg, #4285f4 0%, #357ae8 100%);\
+        color: white;\
+        padding: 16px 20px;\
+        display: flex;\
+        justify-content: space-between;\
+        align-items: center;\
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);\
+    }\
+\
+    .avisia-chatbot-title {\
+        display: flex;\
+        align-items: center;\
+        gap: 10px;\
+        font-weight: 600;\
+        font-size: 16px;\
+    }\
+\
+    .avisia-chatbot-close {\
+        background: transparent;\
+        border: none;\
+        color: white;\
+        cursor: pointer;\
+        padding: 4px;\
+        display: flex;\
+        align-items: center;\
+        justify-content: center;\
+        border-radius: 4px;\
+        transition: background 0.2s ease;\
+    }\
+\
+    .avisia-chatbot-close:hover {\
+        background: rgba(255, 255, 255, 0.1);\
+    }\
+\
+    /* Messages area */\
+    .avisia-chatbot-messages {\
+        flex: 1;\
+        overflow-y: auto;\
+        padding: 20px;\
+        display: flex;\
+        flex-direction: column;\
+        gap: 12px;\
+        background: #f8f9fa;\
+    }\
+\
+    .avisia-chatbot-messages::-webkit-scrollbar {\
+        width: 6px;\
+    }\
+\
+    .avisia-chatbot-messages::-webkit-scrollbar-track {\
+        background: transparent;\
+    }\
+\
+    .avisia-chatbot-messages::-webkit-scrollbar-thumb {\
+        background: #cbd5e0;\
+        border-radius: 3px;\
+    }\
+\
+    .avisia-chatbot-messages::-webkit-scrollbar-thumb:hover {\
+        background: #a0aec0;\
+    }\
+\
+    /* Message bubbles */\
+    .avisia-message {\
+        display: flex;\
+        margin-bottom: 8px;\
+        animation: slideIn 0.3s ease;\
+    }\
+\
+    @keyframes slideIn {\
+        from {\
+            opacity: 0;\
+            transform: translateY(10px);\
+        }\
+        to {\
+            opacity: 1;\
+            transform: translateY(0);\
+        }\
+    }\
+\
+    .avisia-message-content {\
+        padding: 12px 16px;\
+        border-radius: 12px;\
+        max-width: 75%;\
+        word-wrap: break-word;\
+        line-height: 1.5;\
+        font-size: 14px;\
+    }\
+\
+    .avisia-message-user .avisia-message-content {\
+        background: linear-gradient(135deg, #4285f4 0%, #357ae8 100%);\
+        color: white;\
+        margin-left: auto;\
+        border-bottom-right-radius: 4px;\
+    }\
+\
+    .avisia-message-assistant .avisia-message-content {\
+        background: white;\
+        color: #2d3748;\
+        border: 1px solid #e2e8f0;\
+        border-bottom-left-radius: 4px;\
+    }\
+\
+    /* Loading animation */\
+    .avisia-message-loading .avisia-message-content {\
+        padding: 16px;\
+    }\
+\
+    .avisia-loading-dots {\
+        display: flex;\
+        gap: 4px;\
+        align-items: center;\
+    }\
+\
+    .avisia-loading-dots span {\
+        width: 8px;\
+        height: 8px;\
+        border-radius: 50%;\
+        background: #cbd5e0;\
+        animation: bounce 1.4s infinite ease-in-out both;\
+    }\
+\
+    .avisia-loading-dots span:nth-child(1) {\
+        animation-delay: -0.32s;\
+    }\
+\
+    .avisia-loading-dots span:nth-child(2) {\
+        animation-delay: -0.16s;\
+    }\
+\
+    @keyframes bounce {\
+        0%, 80%, 100% {\
+            transform: scale(0);\
+            opacity: 0.5;\
+        }\
+        40% {\
+            transform: scale(1);\
+            opacity: 1;\
+        }\
+    }\
+\
+    /* Input area */\
+    .avisia-chatbot-input-area {\
+        display: flex;\
+        gap: 8px;\
+        padding: 16px 20px;\
+        background: white;\
+        border-top: 1px solid #e2e8f0;\
+    }\
+\
+    .avisia-chatbot-input {\
+        flex: 1;\
+        border: 1px solid #e2e8f0;\
+        border-radius: 24px;\
+        padding: 10px 16px;\
+        font-size: 14px;\
+        outline: none;\
+        transition: all 0.2s ease;\
+        font-family: inherit;\
+    }\
+\
+    .avisia-chatbot-input:focus {\
+        border-color: #4285f4;\
+        box-shadow: 0 0 0 3px rgba(66, 133, 244, 0.1);\
+    }\
+\
+    .avisia-chatbot-input::placeholder {\
+        color: #a0aec0;\
+    }\
+\
+    .avisia-chatbot-send {\
+        width: 40px;\
+        height: 40px;\
+        border-radius: 20px;\
+        background: linear-gradient(135deg, #4285f4 0%, #357ae8 100%);\
+        border: none;\
+        color: white;\
+        cursor: pointer;\
+        display: flex;\
+        align-items: center;\
+        justify-content: center;\
+        transition: all 0.2s ease;\
+        flex-shrink: 0;\
+    }\
+\
+    .avisia-chatbot-send:hover {\
+        transform: scale(1.05);\
+        box-shadow: 0 4px 12px rgba(66, 133, 244, 0.3);\
+    }\
+\
+    .avisia-chatbot-send:active {\
+        transform: scale(0.95);\
+    }\
+\
+    .avisia-chatbot-send:disabled {\
+        opacity: 0.5;\
+        cursor: not-allowed;\
+    }\
+\
+    /* Mobile responsiveness */\
+    @media (max-width: 480px) {\
+        .avisia-chatbot-widget {\
+            width: calc(100vw - 40px);\
+            height: calc(100vh - 40px);\
+            max-height: 600px;\
+        }\
+\
+        .avisia-chatbot-container {\
+            bottom: 10px;\
+            right: 10px;\
+            left: 10px;\
+        }\
+\
+        .avisia-chatbot-toggle {\
+            width: 56px;\
+            height: 56px;\
+        }\
+\
+        .avisia-message-content {\
+            max-width: 85%;\
+            font-size: 13px;\
+        }\
+    }\
+\
+    .avisia-chatbot-toggle:focus-visible,\
+    .avisia-chatbot-close:focus-visible,\
+    .avisia-chatbot-send:focus-visible,\
+    .avisia-chatbot-input:focus-visible {\
+        outline: 2px solid #4285f4;\
+        outline-offset: 2px;\
+    }\
+\
+    * {\
+        box-sizing: border-box;\
+    }\
+\
+    .avisia-chatbot-container * {\
+        margin: 0;\
+        padding: 0;\
+    }\
+  ';
   document.head.appendChild(style);
 
-  // Load chatbot JavaScript with configuration
-  const script = document.createElement('script');
-  script.textContent = `
-    /* Paste contents of chatbot.js here with CONFIG.API_ENDPOINT updated */
-    /* Or load from external source */
+  // Load chatbot JavaScript
+  var script = document.createElement('script');
+  script.text = '(function() {\
+    "use strict";\
+    \
+    var CONFIG = {\
+      API_ENDPOINT: "' + CLOUD_RUN_URL + '",\
+      POSITION: "bottom-right",\
+      PRIMARY_COLOR: "#4285f4",\
+      STORAGE_KEY: "avisia_chatbot_history",\
+      MAX_MESSAGES: 20,\
+      EXTRACTION_DELAY: 1000\
+    };\
+    \
+    var conversationHistory = [];\
+    var isOpen = false;\
+    var isLoading = false;\
+    var pageContent = "";\
+    \
+    function extractPageContent() {\
+      var excludeSelectors = ["nav", "header", "footer", "aside", "[role=navigation]", "[role=banner]", "[role=complementary]", ".nav", ".navbar", ".menu", ".sidebar", ".advertisement", ".ad", ".ads", ".promo", "script", "style", "noscript", "iframe", "[class*=cookie]", "[id*=cookie]", "[class*=popup]", "[class*=modal]", ".chatbot", "#avisia-chatbot"];\
+      var prioritySelectors = ["main", "article", "[role=main]", ".content", ".main-content", "#content", ".article", ".post", ".entry"];\
+      var content = "";\
+      \
+      for (var i = 0; i < prioritySelectors.length; i++) {\
+        var elements = document.querySelectorAll(prioritySelectors[i]);\
+        if (elements.length > 0) {\
+          for (var j = 0; j < elements.length; j++) {\
+            var clone = elements[j].cloneNode(true);\
+            for (var k = 0; k < excludeSelectors.length; k++) {\
+              var excludedEls = clone.querySelectorAll(excludeSelectors[k]);\
+              for (var l = 0; l < excludedEls.length; l++) {\
+                excludedEls[l].remove();\
+              }\
+            }\
+            content += clone.innerText + "\\n\\n";\
+          }\
+          if (content.trim().length > 100) {\
+            return cleanContent(content);\
+          }\
+        }\
+      }\
+      \
+      var bodyClone = document.body.cloneNode(true);\
+      for (var m = 0; m < excludeSelectors.length; m++) {\
+        var excludedBodyEls = bodyClone.querySelectorAll(excludeSelectors[m]);\
+        for (var n = 0; n < excludedBodyEls.length; n++) {\
+          excludedBodyEls[n].remove();\
+        }\
+      }\
+      content = bodyClone.innerText;\
+      return cleanContent(content);\
+    }\
+    \
+    function cleanContent(text) {\
+      return text.replace(/\\s+/g, " ").replace(/\\n\\s*\\n\\s*\\n/g, "\\n\\n").trim().substring(0, 50000);\
+    }\
+    \
+    function loadHistory() {\
+      try {\
+        var stored = sessionStorage.getItem(CONFIG.STORAGE_KEY);\
+        if (stored) {\
+          conversationHistory = JSON.parse(stored);\
+        }\
+      } catch (e) {\
+        console.warn("Failed to load chat history:", e);\
+      }\
+    }\
+    \
+    function saveHistory() {\
+      try {\
+        if (conversationHistory.length > CONFIG.MAX_MESSAGES) {\
+          conversationHistory = conversationHistory.slice(-CONFIG.MAX_MESSAGES);\
+        }\
+        sessionStorage.setItem(CONFIG.STORAGE_KEY, JSON.stringify(conversationHistory));\
+      } catch (e) {\
+        console.warn("Failed to save chat history:", e);\
+      }\
+    }\
+    \
+    function createChatbotUI() {\
+      var container = document.createElement("div");\
+      container.id = "avisia-chatbot";\
+      container.className = "avisia-chatbot-container " + CONFIG.POSITION;\
+      container.innerHTML = "<div class=\\"avisia-chatbot-widget" + (isOpen ? " open" : "") + "\\"><div class=\\"avisia-chatbot-header\\"><div class=\\"avisia-chatbot-title\\"><svg width=\\"20\\" height=\\"20\\" viewBox=\\"0 0 24 24\\" fill=\\"none\\" stroke=\\"currentColor\\"><path d=\\"M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z\\"/></svg><span>Ask about this page</span></div><button class=\\"avisia-chatbot-close\\" aria-label=\\"Close chat\\"><svg width=\\"20\\" height=\\"20\\" viewBox=\\"0 0 24 24\\" fill=\\"none\\" stroke=\\"currentColor\\"><line x1=\\"18\\" y1=\\"6\\" x2=\\"6\\" y2=\\"18\\"/><line x1=\\"6\\" y1=\\"6\\" x2=\\"18\\" y2=\\"18\\"/></svg></button></div><div class=\\"avisia-chatbot-messages\\" id=\\"avisia-chatbot-messages\\"><div class=\\"avisia-message avisia-message-assistant\\"><div class=\\"avisia-message-content\\">Hi! I\\'m here to help you with any questions about this page. What would you like to know?</div></div></div><div class=\\"avisia-chatbot-input-area\\"><input type=\\"text\\" class=\\"avisia-chatbot-input\\" id=\\"avisia-chatbot-input\\" placeholder=\\"Ask a question...\\" autocomplete=\\"off\\"/><button class=\\"avisia-chatbot-send\\" id=\\"avisia-chatbot-send\\" aria-label=\\"Send message\\"><svg width=\\"20\\" height=\\"20\\" viewBox=\\"0 0 24 24\\" fill=\\"currentColor\\"><path d=\\"M2.01 21L23 12 2.01 3 2 10l15 2-15 2z\\"/></svg></button></div></div><button class=\\"avisia-chatbot-toggle\\" id=\\"avisia-chatbot-toggle\\" aria-label=\\"Open chat\\"><svg width=\\"24\\" height=\\"24\\" viewBox=\\"0 0 24 24\\" fill=\\"currentColor\\"><path d=\\"M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z\\"/></svg><span class=\\"avisia-chatbot-badge\\" id=\\"avisia-chatbot-badge\\" style=\\"display: none;\\">1</span></button>";\
+      document.body.appendChild(container);\
+      attachEventListeners();\
+      loadHistory();\
+      renderHistory();\
+    }\
+    \
+    function attachEventListeners() {\
+      var toggle = document.getElementById("avisia-chatbot-toggle");\
+      var close = document.querySelector(".avisia-chatbot-close");\
+      var input = document.getElementById("avisia-chatbot-input");\
+      var send = document.getElementById("avisia-chatbot-send");\
+      toggle.addEventListener("click", toggleChat);\
+      close.addEventListener("click", toggleChat);\
+      send.addEventListener("click", sendMessage);\
+      input.addEventListener("keypress", function(e) {\
+        if (e.key === "Enter" && !e.shiftKey) {\
+          e.preventDefault();\
+          sendMessage();\
+        }\
+      });\
+    }\
+    \
+    function toggleChat() {\
+      isOpen = !isOpen;\
+      var widget = document.querySelector(".avisia-chatbot-widget");\
+      var toggle = document.getElementById("avisia-chatbot-toggle");\
+      var badge = document.getElementById("avisia-chatbot-badge");\
+      if (isOpen) {\
+        widget.classList.add("open");\
+        toggle.style.display = "none";\
+        document.getElementById("avisia-chatbot-input").focus();\
+        badge.style.display = "none";\
+      } else {\
+        widget.classList.remove("open");\
+        toggle.style.display = "flex";\
+      }\
+    }\
+    \
+    function renderHistory() {\
+      var messagesContainer = document.getElementById("avisia-chatbot-messages");\
+      var welcomeMsg = messagesContainer.querySelector(".avisia-message-assistant");\
+      messagesContainer.innerHTML = "";\
+      messagesContainer.appendChild(welcomeMsg);\
+      for (var i = 0; i < conversationHistory.length; i++) {\
+        addMessageToUI(conversationHistory[i].role, conversationHistory[i].content, false);\
+      }\
+      scrollToBottom();\
+    }\
+    \
+    function addMessageToUI(role, content, shouldScroll) {\
+      if (shouldScroll === undefined) shouldScroll = true;\
+      var messagesContainer = document.getElementById("avisia-chatbot-messages");\
+      var messageDiv = document.createElement("div");\
+      messageDiv.className = "avisia-message avisia-message-" + role;\
+      messageDiv.innerHTML = "<div class=\\"avisia-message-content\\">" + escapeHtml(content) + "</div>";\
+      messagesContainer.appendChild(messageDiv);\
+      if (shouldScroll) {\
+        scrollToBottom();\
+      }\
+    }\
+    \
+    function showLoading() {\
+      var messagesContainer = document.getElementById("avisia-chatbot-messages");\
+      var loadingDiv = document.createElement("div");\
+      loadingDiv.className = "avisia-message avisia-message-assistant avisia-message-loading";\
+      loadingDiv.id = "avisia-loading";\
+      loadingDiv.innerHTML = "<div class=\\"avisia-message-content\\"><div class=\\"avisia-loading-dots\\"><span></span><span></span><span></span></div></div>";\
+      messagesContainer.appendChild(loadingDiv);\
+      scrollToBottom();\
+    }\
+    \
+    function removeLoading() {\
+      var loading = document.getElementById("avisia-loading");\
+      if (loading) {\
+        loading.remove();\
+      }\
+    }\
+    \
+    function scrollToBottom() {\
+      var messagesContainer = document.getElementById("avisia-chatbot-messages");\
+      messagesContainer.scrollTop = messagesContainer.scrollHeight;\
+    }\
+    \
+    function sendMessage() {\
+      var input = document.getElementById("avisia-chatbot-input");\
+      var message = input.value.trim();\
+      if (!message || isLoading) return;\
+      addMessageToUI("user", message);\
+      conversationHistory.push({ role: "user", content: message });\
+      saveHistory();\
+      input.value = "";\
+      isLoading = true;\
+      showLoading();\
+      if (!pageContent) {\
+        pageContent = extractPageContent();\
+      }\
+      fetch(CONFIG.API_ENDPOINT + "/api/chat", {\
+        method: "POST",\
+        headers: { "Content-Type": "application/json" },\
+        body: JSON.stringify({\
+          message: message,\
+          pageContent: pageContent,\
+          pageUrl: window.location.href,\
+          conversationHistory: conversationHistory.slice(0, -1)\
+        })\
+      }).then(function(response) {\
+        if (!response.ok) {\
+          throw new Error("API error: " + response.status);\
+        }\
+        return response.json();\
+      }).then(function(data) {\
+        removeLoading();\
+        addMessageToUI("assistant", data.response);\
+        conversationHistory.push({ role: "assistant", content: data.response });\
+        saveHistory();\
+        isLoading = false;\
+      }).catch(function(error) {\
+        console.error("Chat error:", error);\
+        removeLoading();\
+        addMessageToUI("assistant", "Sorry, I encountered an error. Please try again.");\
+        isLoading = false;\
+      });\
+    }\
+    \
+    function escapeHtml(text) {\
+      var div = document.createElement("div");\
+      div.textContent = text;\
+      return div.innerHTML.replace(/\\n/g, "<br>");\
+    }\
+    \
+    function init() {\
+      if (document.readyState === "loading") {\
+        document.addEventListener("DOMContentLoaded", init);\
+        return;\
+      }\
+      setTimeout(function() {\
+        pageContent = extractPageContent();\
+        createChatbotUI();\
+      }, CONFIG.EXTRACTION_DELAY);\
+    }\
+    \
+    init();\
+  })();';
 
-    (function() {
-      'use strict';
-
-      const CONFIG = {
-          API_ENDPOINT: '${CLOUD_RUN_URL}',
-          POSITION: 'bottom-right',
-          PRIMARY_COLOR: '#4285f4',
-          STORAGE_KEY: 'avisia_chatbot_history',
-          MAX_MESSAGES: 20,
-          EXTRACTION_DELAY: 1000
-      };
-
-      let conversationHistory = [];
-      let isOpen = false;
-      let isLoading = false;
-      let pageContent = '';
-
-      function extractPageContent() {
-          const excludeSelectors = [
-              'nav', 'header', 'footer', 'aside',
-              '[role="navigation"]', '[role="banner"]', '[role="complementary"]',
-              '.nav', '.navbar', '.menu', '.sidebar',
-              '.advertisement', '.ad', '.ads', '.promo',
-              'script', 'style', 'noscript', 'iframe',
-              '[class*="cookie"]', '[id*="cookie"]',
-              '[class*="popup"]', '[class*="modal"]',
-              '.chatbot', '#avisia-chatbot'
-          ];
-
-          const prioritySelectors = [
-              'main',
-              'article',
-              '[role="main"]',
-              '.content', '.main-content', '#content',
-              '.article', '.post', '.entry'
-          ];
-
-          let content = '';
-
-          for (const selector of prioritySelectors) {
-              const elements = document.querySelectorAll(selector);
-              if (elements.length > 0) {
-                  elements.forEach(el => {
-                      const clone = el.cloneNode(true);
-                      excludeSelectors.forEach(excludeSelector => {
-                          clone.querySelectorAll(excludeSelector).forEach(e => e.remove());
-                      });
-                      content += clone.innerText + '\\n\\n';
-                  });
-
-                  if (content.trim().length > 100) {
-                      return cleanContent(content);
-                  }
-              }
-          }
-
-          const bodyClone = document.body.cloneNode(true);
-          excludeSelectors.forEach(selector => {
-              bodyClone.querySelectorAll(selector).forEach(el => el.remove());
-          });
-
-          content = bodyClone.innerText;
-          return cleanContent(content);
-      }
-
-      function cleanContent(text) {
-          return text
-              .replace(/\\s+/g, ' ')
-              .replace(/\\n\\s*\\n\\s*\\n/g, '\\n\\n')
-              .trim()
-              .substring(0, 50000);
-      }
-
-      function loadHistory() {
-          try {
-              const stored = sessionStorage.getItem(CONFIG.STORAGE_KEY);
-              if (stored) {
-                  conversationHistory = JSON.parse(stored);
-              }
-          } catch (e) {
-              console.warn('Failed to load chat history:', e);
-          }
-      }
-
-      function saveHistory() {
-          try {
-              if (conversationHistory.length > CONFIG.MAX_MESSAGES) {
-                  conversationHistory = conversationHistory.slice(-CONFIG.MAX_MESSAGES);
-              }
-              sessionStorage.setItem(CONFIG.STORAGE_KEY, JSON.stringify(conversationHistory));
-          } catch (e) {
-              console.warn('Failed to save chat history:', e);
-          }
-      }
-
-      function createChatbotUI() {
-          const container = document.createElement('div');
-          container.id = 'avisia-chatbot';
-          container.className = 'avisia-chatbot-container ' + CONFIG.POSITION;
-
-          container.innerHTML = '<div class="avisia-chatbot-widget ' + (isOpen ? 'open' : '') + '"><div class="avisia-chatbot-header"><div class="avisia-chatbot-title"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg><span>Ask about this page</span></div><button class="avisia-chatbot-close" aria-label="Close chat"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div><div class="avisia-chatbot-messages" id="avisia-chatbot-messages"><div class="avisia-message avisia-message-assistant"><div class="avisia-message-content">Hi! I\\'m here to help you with any questions about this page. What would you like to know?</div></div></div><div class="avisia-chatbot-input-area"><input type="text" class="avisia-chatbot-input" id="avisia-chatbot-input" placeholder="Ask a question..." autocomplete="off"/><button class="avisia-chatbot-send" id="avisia-chatbot-send" aria-label="Send message"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg></button></div></div><button class="avisia-chatbot-toggle" id="avisia-chatbot-toggle" aria-label="Open chat"><svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg><span class="avisia-chatbot-badge" id="avisia-chatbot-badge" style="display: none;">1</span></button>';
-
-          document.body.appendChild(container);
-          attachEventListeners();
-          loadHistory();
-          renderHistory();
-      }
-
-      function attachEventListeners() {
-          const toggle = document.getElementById('avisia-chatbot-toggle');
-          const close = document.querySelector('.avisia-chatbot-close');
-          const input = document.getElementById('avisia-chatbot-input');
-          const send = document.getElementById('avisia-chatbot-send');
-
-          toggle.addEventListener('click', toggleChat);
-          close.addEventListener('click', toggleChat);
-          send.addEventListener('click', sendMessage);
-
-          input.addEventListener('keypress', function(e) {
-              if (e.key === 'Enter' && !e.shiftKey) {
-                  e.preventDefault();
-                  sendMessage();
-              }
-          });
-      }
-
-      function toggleChat() {
-          isOpen = !isOpen;
-          const widget = document.querySelector('.avisia-chatbot-widget');
-          const toggle = document.getElementById('avisia-chatbot-toggle');
-          const badge = document.getElementById('avisia-chatbot-badge');
-
-          if (isOpen) {
-              widget.classList.add('open');
-              toggle.style.display = 'none';
-              document.getElementById('avisia-chatbot-input').focus();
-              badge.style.display = 'none';
-          } else {
-              widget.classList.remove('open');
-              toggle.style.display = 'flex';
-          }
-      }
-
-      function renderHistory() {
-          const messagesContainer = document.getElementById('avisia-chatbot-messages');
-          const welcomeMsg = messagesContainer.querySelector('.avisia-message-assistant');
-          messagesContainer.innerHTML = '';
-          messagesContainer.appendChild(welcomeMsg);
-
-          conversationHistory.forEach(function(msg) {
-              addMessageToUI(msg.role, msg.content, false);
-          });
-
-          scrollToBottom();
-      }
-
-      function addMessageToUI(role, content, shouldScroll) {
-          if (shouldScroll === undefined) shouldScroll = true;
-
-          const messagesContainer = document.getElementById('avisia-chatbot-messages');
-          const messageDiv = document.createElement('div');
-          messageDiv.className = 'avisia-message avisia-message-' + role;
-          messageDiv.innerHTML = '<div class="avisia-message-content">' + escapeHtml(content) + '</div>';
-          messagesContainer.appendChild(messageDiv);
-
-          if (shouldScroll) {
-              scrollToBottom();
-          }
-      }
-
-      function showLoading() {
-          const messagesContainer = document.getElementById('avisia-chatbot-messages');
-          const loadingDiv = document.createElement('div');
-          loadingDiv.className = 'avisia-message avisia-message-assistant avisia-message-loading';
-          loadingDiv.id = 'avisia-loading';
-          loadingDiv.innerHTML = '<div class="avisia-message-content"><div class="avisia-loading-dots"><span></span><span></span><span></span></div></div>';
-          messagesContainer.appendChild(loadingDiv);
-          scrollToBottom();
-      }
-
-      function removeLoading() {
-          const loading = document.getElementById('avisia-loading');
-          if (loading) {
-              loading.remove();
-          }
-      }
-
-      function scrollToBottom() {
-          const messagesContainer = document.getElementById('avisia-chatbot-messages');
-          messagesContainer.scrollTop = messagesContainer.scrollHeight;
-      }
-
-      async function sendMessage() {
-          const input = document.getElementById('avisia-chatbot-input');
-          const message = input.value.trim();
-
-          if (!message || isLoading) return;
-
-          addMessageToUI('user', message);
-          conversationHistory.push({ role: 'user', content: message });
-          saveHistory();
-
-          input.value = '';
-          isLoading = true;
-          showLoading();
-
-          try {
-              if (!pageContent) {
-                  pageContent = extractPageContent();
-              }
-
-              const response = await fetch(CONFIG.API_ENDPOINT + '/api/chat', {
-                  method: 'POST',
-                  headers: {
-                      'Content-Type': 'application/json',
-                  },
-                  body: JSON.stringify({
-                      message: message,
-                      pageContent: pageContent,
-                      pageUrl: window.location.href,
-                      conversationHistory: conversationHistory.slice(0, -1)
-                  })
-              });
-
-              if (!response.ok) {
-                  throw new Error('API error: ' + response.status);
-              }
-
-              const data = await response.json();
-              removeLoading();
-              addMessageToUI('assistant', data.response);
-              conversationHistory.push({ role: 'assistant', content: data.response });
-              saveHistory();
-
-          } catch (error) {
-              console.error('Chat error:', error);
-              removeLoading();
-              addMessageToUI('assistant', 'Sorry, I encountered an error. Please try again.');
-          } finally {
-              isLoading = false;
-          }
-      }
-
-      function escapeHtml(text) {
-          const div = document.createElement('div');
-          div.textContent = text;
-          return div.innerHTML.replace(/\\n/g, '<br>');
-      }
-
-      function init() {
-          if (document.readyState === 'loading') {
-              document.addEventListener('DOMContentLoaded', init);
-              return;
-          }
-
-          setTimeout(function() {
-              pageContent = extractPageContent();
-              createChatbotUI();
-          }, CONFIG.EXTRACTION_DELAY);
-      }
-
-      init();
-
-    })();
-  `;
   document.body.appendChild(script);
 
 })();
