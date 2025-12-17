@@ -35,22 +35,22 @@ User sees answer
 
 ### 1. Deploy Cloud Run Backend
 
-```bash
+```powershell
 # Set your GCP project ID
 gcloud config set project YOUR_PROJECT_ID
 
 # Set environment variables
-export PROJECT_ID=YOUR_PROJECT_ID
-export REGION=us-central1
-export SERVICE_NAME=avisia-chatbot-mistral
+$PROJECT_ID = "YOUR_PROJECT_ID"
+$REGION = "us-central1"
+$SERVICE_NAME = "avisia-chatbot-mistral"
 
 # Deploy to Cloud Run
 cd backend
-gcloud run deploy $SERVICE_NAME \
-  --source . \
-  --platform managed \
-  --region $REGION \
-  --allow-unauthenticated \
+gcloud run deploy $SERVICE_NAME `
+  --source . `
+  --platform managed `
+  --region $REGION `
+  --allow-unauthenticated `
   --set-env-vars MISTRAL_API_KEY=YOUR_MISTRAL_API_KEY
 ```
 
@@ -162,7 +162,7 @@ Typical costs for 1000 conversations/day:
 ### API errors
 - Verify Cloud Run URL is correct
 - Check Mistral API key is valid
-- Review Cloud Run logs: `gcloud run logs read $SERVICE_NAME`
+- Review Cloud Run logs: `gcloud run logs read $SERVICE_NAME` (PowerShell)
 
 ### Content extraction issues
 - Adjust selectors in `chatbot.js`
@@ -174,15 +174,15 @@ Typical costs for 1000 conversations/day:
 ### Local Testing
 
 Backend:
-```bash
+```powershell
 cd backend
 pip install -r requirements.txt
-export MISTRAL_API_KEY=your_key
+$env:MISTRAL_API_KEY = "your_key"
 python main.py
 ```
 
 Client:
-```bash
+```powershell
 cd client
 # Serve files with any HTTP server
 python -m http.server 8080
@@ -191,7 +191,7 @@ python -m http.server 8080
 ### Updating
 
 Backend:
-```bash
+```powershell
 gcloud run deploy $SERVICE_NAME --source .
 ```
 
