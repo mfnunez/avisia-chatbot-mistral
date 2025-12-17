@@ -1,12 +1,12 @@
 <!--
-  Avisia Chatbot - GTM Custom HTML Tag (ES5 Compatible)
+  AVISIA Chatbot - GTM Custom HTML Tag (ES5 Compatible)
 
-  SETUP INSTRUCTIONS:
-  1. Copy this entire code
-  2. In GTM, create a new Custom HTML tag
-  3. Replace YOUR_CLOUD_RUN_URL with your actual Cloud Run service URL
-  4. Set trigger to "All Pages" or specific page views
-  5. Save and publish
+  INSTRUCTIONS DE CONFIGURATION :
+  1. Copier tout ce code
+  2. Dans GTM, créer une nouvelle balise HTML personnalisée
+  3. Remplacer YOUR_CLOUD_RUN_URL par l'URL de votre service Cloud Run
+  4. Définir le déclencheur sur "Toutes les pages" ou pages spécifiques
+  5. Enregistrer et publier
 -->
 
 <script>
@@ -23,14 +23,13 @@
   // Inject CSS
   var style = document.createElement('style');
   style.textContent = '\
-    /* Paste contents of chatbot.css here, or load externally */\
-    /* For production, host CSS on CDN and load via link tag */\
+    /* AVISIA Chatbot Styles */\
 \
     /* Container and positioning */\
     .avisia-chatbot-container {\
         position: fixed;\
         z-index: 999999;\
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;\
+        font-family: "Poppins", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;\
     }\
 \
     .avisia-chatbot-container.bottom-right {\
@@ -58,9 +57,9 @@
         width: 60px;\
         height: 60px;\
         border-radius: 30px;\
-        background: linear-gradient(135deg, #4285f4 0%, #357ae8 100%);\
+        background: linear-gradient(135deg, #1d1973 0%, #2ea3f2 100%);\
         border: none;\
-        box-shadow: 0 4px 12px rgba(66, 133, 244, 0.4);\
+        box-shadow: 0 4px 12px rgba(29, 25, 115, 0.4);\
         cursor: pointer;\
         display: flex;\
         align-items: center;\
@@ -71,7 +70,7 @@
 \
     .avisia-chatbot-toggle:hover {\
         transform: scale(1.05);\
-        box-shadow: 0 6px 16px rgba(66, 133, 244, 0.5);\
+        box-shadow: 0 6px 16px rgba(29, 25, 115, 0.5);\
     }\
 \
     .avisia-chatbot-toggle:active {\
@@ -86,7 +85,7 @@
         position: absolute;\
         top: -5px;\
         right: -5px;\
-        background: #ea4335;\
+        background: #2ea3f2;\
         color: white;\
         border-radius: 10px;\
         padding: 2px 6px;\
@@ -120,7 +119,7 @@
 \
     /* Header */\
     .avisia-chatbot-header {\
-        background: linear-gradient(135deg, #4285f4 0%, #357ae8 100%);\
+        background: linear-gradient(135deg, #1d1973 0%, #2ea3f2 100%);\
         color: white;\
         padding: 16px 20px;\
         display: flex;\
@@ -210,7 +209,7 @@
     }\
 \
     .avisia-message-user .avisia-message-content {\
-        background: linear-gradient(135deg, #4285f4 0%, #357ae8 100%);\
+        background: linear-gradient(135deg, #1d1973 0%, #2ea3f2 100%);\
         color: white;\
         margin-left: auto;\
         border-bottom-right-radius: 4px;\
@@ -282,8 +281,8 @@
     }\
 \
     .avisia-chatbot-input:focus {\
-        border-color: #4285f4;\
-        box-shadow: 0 0 0 3px rgba(66, 133, 244, 0.1);\
+        border-color: #1d1973;\
+        box-shadow: 0 0 0 3px rgba(29, 25, 115, 0.1);\
     }\
 \
     .avisia-chatbot-input::placeholder {\
@@ -294,7 +293,7 @@
         width: 40px;\
         height: 40px;\
         border-radius: 20px;\
-        background: linear-gradient(135deg, #4285f4 0%, #357ae8 100%);\
+        background: linear-gradient(135deg, #1d1973 0%, #2ea3f2 100%);\
         border: none;\
         color: white;\
         cursor: pointer;\
@@ -307,7 +306,7 @@
 \
     .avisia-chatbot-send:hover {\
         transform: scale(1.05);\
-        box-shadow: 0 4px 12px rgba(66, 133, 244, 0.3);\
+        box-shadow: 0 4px 12px rgba(29, 25, 115, 0.3);\
     }\
 \
     .avisia-chatbot-send:active {\
@@ -348,7 +347,7 @@
     .avisia-chatbot-close:focus-visible,\
     .avisia-chatbot-send:focus-visible,\
     .avisia-chatbot-input:focus-visible {\
-        outline: 2px solid #4285f4;\
+        outline: 2px solid #1d1973;\
         outline-offset: 2px;\
     }\
 \
@@ -371,7 +370,8 @@
     var CONFIG = {\
       API_ENDPOINT: "' + CLOUD_RUN_URL + '",\
       POSITION: "bottom-right",\
-      PRIMARY_COLOR: "#4285f4",\
+      PRIMARY_COLOR: "#1d1973",\
+      ACCENT_COLOR: "#2ea3f2",\
       STORAGE_KEY: "avisia_chatbot_history",\
       MAX_MESSAGES: 20,\
       EXTRACTION_DELAY: 1000\
@@ -428,7 +428,7 @@
           conversationHistory = JSON.parse(stored);\
         }\
       } catch (e) {\
-        console.warn("Failed to load chat history:", e);\
+        console.warn("Erreur lors du chargement de l\'historique:", e);\
       }\
     }\
     \
@@ -439,7 +439,7 @@
         }\
         sessionStorage.setItem(CONFIG.STORAGE_KEY, JSON.stringify(conversationHistory));\
       } catch (e) {\
-        console.warn("Failed to save chat history:", e);\
+        console.warn("Erreur lors de la sauvegarde de l\'historique:", e);\
       }\
     }\
     \
@@ -447,7 +447,7 @@
       var container = document.createElement("div");\
       container.id = "avisia-chatbot";\
       container.className = "avisia-chatbot-container " + CONFIG.POSITION;\
-      container.innerHTML = "<div class=\\"avisia-chatbot-widget" + (isOpen ? " open" : "") + "\\"><div class=\\"avisia-chatbot-header\\"><div class=\\"avisia-chatbot-title\\"><svg width=\\"20\\" height=\\"20\\" viewBox=\\"0 0 24 24\\" fill=\\"none\\" stroke=\\"currentColor\\"><path d=\\"M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z\\"/></svg><span>Ask about this page</span></div><button class=\\"avisia-chatbot-close\\" aria-label=\\"Close chat\\"><svg width=\\"20\\" height=\\"20\\" viewBox=\\"0 0 24 24\\" fill=\\"none\\" stroke=\\"currentColor\\"><line x1=\\"18\\" y1=\\"6\\" x2=\\"6\\" y2=\\"18\\"/><line x1=\\"6\\" y1=\\"6\\" x2=\\"18\\" y2=\\"18\\"/></svg></button></div><div class=\\"avisia-chatbot-messages\\" id=\\"avisia-chatbot-messages\\"><div class=\\"avisia-message avisia-message-assistant\\"><div class=\\"avisia-message-content\\">Hi! I\\'m here to help you with any questions about this page. What would you like to know?</div></div></div><div class=\\"avisia-chatbot-input-area\\"><input type=\\"text\\" class=\\"avisia-chatbot-input\\" id=\\"avisia-chatbot-input\\" placeholder=\\"Ask a question...\\" autocomplete=\\"off\\"/><button class=\\"avisia-chatbot-send\\" id=\\"avisia-chatbot-send\\" aria-label=\\"Send message\\"><svg width=\\"20\\" height=\\"20\\" viewBox=\\"0 0 24 24\\" fill=\\"currentColor\\"><path d=\\"M2.01 21L23 12 2.01 3 2 10l15 2-15 2z\\"/></svg></button></div></div><button class=\\"avisia-chatbot-toggle\\" id=\\"avisia-chatbot-toggle\\" aria-label=\\"Open chat\\"><svg width=\\"24\\" height=\\"24\\" viewBox=\\"0 0 24 24\\" fill=\\"currentColor\\"><path d=\\"M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z\\"/></svg><span class=\\"avisia-chatbot-badge\\" id=\\"avisia-chatbot-badge\\" style=\\"display: none;\\">1</span></button>";\
+      container.innerHTML = "<div class=\\"avisia-chatbot-widget" + (isOpen ? " open" : "") + "\\"><div class=\\"avisia-chatbot-header\\"><div class=\\"avisia-chatbot-title\\"><svg width=\\"20\\" height=\\"20\\" viewBox=\\"0 0 24 24\\" fill=\\"none\\" stroke=\\"currentColor\\"><path d=\\"M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z\\"/></svg><span>Assistant AVISIA</span></div><button class=\\"avisia-chatbot-close\\" aria-label=\\"Fermer le chat\\"><svg width=\\"20\\" height=\\"20\\" viewBox=\\"0 0 24 24\\" fill=\\"none\\" stroke=\\"currentColor\\"><line x1=\\"18\\" y1=\\"6\\" x2=\\"6\\" y2=\\"18\\"/><line x1=\\"6\\" y1=\\"6\\" x2=\\"18\\" y2=\\"18\\"/></svg></button></div><div class=\\"avisia-chatbot-messages\\" id=\\"avisia-chatbot-messages\\"><div class=\\"avisia-message avisia-message-assistant\\"><div class=\\"avisia-message-content\\">Bonjour ! Je suis l\'assistant virtuel d\'AVISIA. Je peux vous aider à découvrir nos expertises en data, IA et transformation digitale. Comment puis-je vous aider ?</div></div></div><div class=\\"avisia-chatbot-input-area\\"><input type=\\"text\\" class=\\"avisia-chatbot-input\\" id=\\"avisia-chatbot-input\\" placeholder=\\"Posez votre question...\\" autocomplete=\\"off\\"/><button class=\\"avisia-chatbot-send\\" id=\\"avisia-chatbot-send\\" aria-label=\\"Envoyer le message\\"><svg width=\\"20\\" height=\\"20\\" viewBox=\\"0 0 24 24\\" fill=\\"currentColor\\"><path d=\\"M2.01 21L23 12 2.01 3 2 10l15 2-15 2z\\"/></svg></button></div></div><button class=\\"avisia-chatbot-toggle\\" id=\\"avisia-chatbot-toggle\\" aria-label=\\"Ouvrir le chat\\"><svg width=\\"24\\" height=\\"24\\" viewBox=\\"0 0 24 24\\" fill=\\"currentColor\\"><path d=\\"M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z\\"/></svg><span class=\\"avisia-chatbot-badge\\" id=\\"avisia-chatbot-badge\\" style=\\"display: none;\\">1</span></button>";\
       document.body.appendChild(container);\
       attachEventListeners();\
       loadHistory();\
@@ -555,7 +555,7 @@
         })\
       }).then(function(response) {\
         if (!response.ok) {\
-          throw new Error("API error: " + response.status);\
+          throw new Error("Erreur API: " + response.status);\
         }\
         return response.json();\
       }).then(function(data) {\
@@ -565,9 +565,9 @@
         saveHistory();\
         isLoading = false;\
       }).catch(function(error) {\
-        console.error("Chat error:", error);\
+        console.error("Erreur chat:", error);\
         removeLoading();\
-        addMessageToUI("assistant", "Sorry, I encountered an error. Please try again.");\
+        addMessageToUI("assistant", "Désolé, une erreur est survenue. Veuillez réessayer ou contacter un expert AVISIA.");\
         isLoading = false;\
       });\
     }\
