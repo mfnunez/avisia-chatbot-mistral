@@ -533,9 +533,19 @@
         toggle.style.display = "none";\
         document.getElementById("avisia-chatbot-input").focus();\
         badge.style.display = "none";\
+        \
+        pushGTMEvent("chatbot_opened", {\
+          conversation_length: conversationHistory.length,\
+          page_url: window.location.href\
+        });\
       } else {\
         widget.classList.remove("open");\
         toggle.style.display = "flex";\
+        \
+        pushGTMEvent("chatbot_closed", {\
+          conversation_length: conversationHistory.length,\
+          page_url: window.location.href\
+        });\
       }\
     }\
     \
@@ -584,10 +594,28 @@
       messagesContainer.scrollTop = messagesContainer.scrollHeight;\
     }\
     \
+    function pushGTMEvent(eventName, eventParams) {\
+      window.dataLayer = window.dataLayer || [];\
+      window.dataLayer.push({\
+        event: eventName,\
+        chatbot_name: "avisia_chatbot",\
+        chatbot_params: eventParams\
+      });\
+    }\
+    \
     function sendMessage() {\
       var input = document.getElementById("avisia-chatbot-input");\
       var message = input.value.trim();\
       if (!message || isLoading) return;\
+      \
+      var conversationTurn = Math.floor((conversationHistory.length + 1) / 2) + 1;\
+      \
+      pushGTMEvent("chatbot_message_sent", {\
+        message_length: message.length,\
+        conversation_turn: conversationTurn,\
+        page_url: window.location.href\
+      });\
+      \
       addMessageToUI("user", message);\
       conversationHistory.push({ role: "user", content: message });\
       saveHistory();\
@@ -597,6 +625,7 @@
       if (!pageContent) {\
         pageContent = extractPageContent();\
       }\
+      var messageStartTime = new Date().getTime();\
       fetch(CONFIG.API_ENDPOINT + "/api/chat", {\
         method: "POST",\
         headers: { "Content-Type": "application/json" },\
@@ -612,16 +641,30 @@
         }\
         return response.json();\
       }).then(function(data) {\
+        var responseTime = new Date().getTime() - messageStartTime;\
         removeLoading();\
         addMessageToUI("assistant", data.response);\
         conversationHistory.push({ role: "assistant", content: data.response });\
         saveHistory();\
         isLoading = false;\
+        \
+        pushGTMEvent("chatbot_response_received", {\
+          response_length: data.response.length,\
+          response_time_ms: responseTime,\
+          conversation_turn: conversationTurn,\
+          page_url: window.location.href\
+        });\
       }).catch(function(error) {\
         console.error("Erreur chat:", error);\
         removeLoading();\
         addMessageToUI("assistant", "Désolé, une erreur est survenue. Veuillez réessayer ou contacter un expert AVISIA.");\
         isLoading = false;\
+        \
+        pushGTMEvent("chatbot_error", {\
+          error_message: error.message,\
+          conversation_turn: conversationTurn,\
+          page_url: window.location.href\
+        });\
       });\
     }\
     \
@@ -630,6 +673,7 @@
       div.textContent = text;\
       var escaped = div.innerHTML;\
       escaped = escaped.replace(/\\n/g, "<br>");\
+      escaped = escaped.replace(/\\[([^\\]]+)\\]\\(([^)]+)\\)/g, "<a href=\\"$2\\" target=\\"_blank\\" rel=\\"noopener noreferrer\\" style=\\"color: #1d1973; text-decoration: underline;\\">$1</a>");\
       escaped = escaped.replace(/\\*\\*([^*]+)\\*\\*/g, "<strong>$1</strong>");\
       escaped = escaped.replace(/\\*([^*]+)\\*/g, "<em>$1</em>");\
       return escaped;\
