@@ -41,7 +41,7 @@ gcloud config set project YOUR_PROJECT_ID
 
 # Set environment variables
 $PROJECT_ID = "YOUR_PROJECT_ID"
-$REGION = "us-central1"
+$REGION = "europe-west1"
 $SERVICE_NAME = "avisia-chatbot-mistral"
 
 # Deploy to Cloud Run
